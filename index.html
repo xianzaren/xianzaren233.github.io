@@ -9,12 +9,11 @@
   <div id="image-container"></div>
 
   <script>
-    // 根据实际情况修改
     const username = "xianzaren";  // 你的 GitHub 用户名
     const repo = "xianzaren233.github.io";        // 仓库名
     const folderPath = "exp1";    // 文件夹路径
 
-    async function loadImages() {
+    async function loadImages(folderPath) {
       try {
         // 调用 GitHub 的仓库内容 API
         const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${folderPath}`;
@@ -28,28 +27,27 @@
         const data = await response.json();
         const container = document.getElementById("image-container");
 
-        // 遍历文件列表，只处理图片文件
-        data.forEach(item => {
-          // 检测文件扩展名
-          if (
-            item.type === "file" &&
-            /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(item.name)
-          ) {
-            // 创建 <img> 元素
+        // 遍历文件列表
+        for (const item of data) {
+          if (item.type === "file" && /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(item.name)) {
+            // 如果是图片文件，创建 <img> 元素
             const img = document.createElement("img");
             img.src = item.download_url;  // GitHub 提供的可直接访问的下载地址
             img.alt = item.name;
             img.style.maxWidth = "300px";
             img.style.margin = "10px";
             container.appendChild(img);
+          } else if (item.type === "dir") {
+            // 如果是文件夹，则递归加载子目录中的文件
+            loadImages(item.path); // 递归调用
           }
-        });
+        }
       } catch (error) {
         console.error("Error fetching images:", error);
       }
     }
 
-    loadImages();
+    loadImages(folderPath);
   </script>
 </body>
 </html>
